@@ -15,17 +15,33 @@ function Button:new(text, x, y, w, h, callback, colors_pressed, colors_released,
     b.h = h
     b.callback = callback
     b.state = 0 -- 0: idle, 1: hovered, 2: pressed
-    b.colors_pressed = colors_pressed or {{0, 0, 0}, {1, 1, 1}}
-    b.colors_released = colors_released or {{1, 1, 1}, {0, 0, 0}}
+    b.colors_pressed = {{0, 0, 0}, {1, 1, 1}}
+    if colors_pressed then
+        b.colors_pressed = {
+            util.hex_to_col(colors_pressed[1]),
+            util.hex_to_col(colors_pressed[2]),
+        }
+    end
+    b.colors_released = {{1, 1, 1}, {0, 0, 0}}
+    if colors_released then
+        b.colors_released = {
+            util.hex_to_col(colors_released[1]),
+            util.hex_to_col(colors_released[2]),
+        }
+    end
     b.font = font or love.graphics.newFont(18)
     return b
+end
+
+function Button:init()
+    self.state = 0
 end
 
 function Button:update()
     local mouse_x, mouse_y = love.mouse.getPosition()
     -- Idle
     if self.state == 0 then
-        if point_in_rect(mouse_x, mouse_y, self.x, self.y, self.w, self.h) then
+        if util.point_in_rect(mouse_x, mouse_y, self.x, self.y, self.w, self.h) then
             if #love.touch.getTouches() > 0 then
                 -- This is a touch, go directly to pressed
                 self.state = 2
@@ -36,7 +52,7 @@ function Button:update()
         end
     -- Hovered
     elseif self.state == 1 then
-        if not point_in_rect(mouse_x, mouse_y, self.x, self.y, self.w, self.h) then
+        if not util.point_in_rect(mouse_x, mouse_y, self.x, self.y, self.w, self.h) then
             -- Mouse exited
             self.state = 0
         elseif love.mouse.isDown(1) then
@@ -45,7 +61,7 @@ function Button:update()
         end
     -- Pressed
     elseif self.state == 2 then
-        if not point_in_rect(mouse_x, mouse_y, self.x, self.y, self.w, self.h) then
+        if not util.point_in_rect(mouse_x, mouse_y, self.x, self.y, self.w, self.h) then
             -- Mouse exited
             self.state = 0
         elseif not love.mouse.isDown(1) then
@@ -72,11 +88,6 @@ function Button:draw()
     love.graphics.setFont(self.font)
     love.graphics.setColor(unpack(text_color))
     util.draw_centered_text(self.x, self.y, self.w, 0.7*self.h, self.text)
-end
-
-function point_in_rect(px, py, x, y, w, h)
-    return px >= x and px <= x+w and
-           py >= y and py <= y+h
 end
 
 return Button

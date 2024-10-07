@@ -1,47 +1,42 @@
-local util = require("util")
 local Button = require("button")
+local fonts = require("fonts")
+local util = require("util")
+local levels = require("levels")
+local palette = require("palette")
 
-local title_scene = {}
-
-function title_scene.start_game()
-    scenes.game_scene:enter()
-end
-
-function title_scene.start_training()
-    scenes.game_scene:enter(true)
-end
-
-function title_scene.show_howto()
-    scenes.howto_scene:enter()
-end
-
-function title_scene:enter()
-    -- stop music
-    if music:isPlaying() then
-        music:stop()
-    end
-    -- setup buttons
-    self.buttons = {
-        Button:new("Start game", 200, 250, 400, 80, title_scene.start_game, button_colors.pressed, button_colors.released, fonts.small),
-        Button:new("Training", 200, 350, 400, 80, title_scene.start_training, button_colors.pressed, button_colors.released, fonts.small),
-        Button:new("How to play", 200, 450, 400, 80, title_scene.show_howto, button_colors.pressed, button_colors.released, fonts.small),
+local title_scene = {
+    buttons = {
+        Button:new(
+            "Play", 200, 400, 400, 80,
+            function()
+                util.enter_scene(SCENES.level_select_scene, levels[1])
+            end,
+            {palette.buttons.PRESSED_TEXT, palette.buttons.PRESSED_BG},
+            {palette.buttons.IDLE_TEXT, palette.buttons.IDLE_BG},
+            fonts.small
+        ),
     }
-    love.update = self.update
-    love.draw = self.draw
-end
+}
 
-function title_scene.update()
-    for _, b in pairs(title_scene.buttons) do
-        b:update()
+function title_scene:init()
+    -- initialize buttons
+    for _, button in pairs(self.buttons) do
+        button:init()
     end
 end
 
-function title_scene.draw()
-    love.graphics.setColor(1, 1, 1)
+function title_scene:update()
+    for _, button in pairs(self.buttons) do
+        button:update()
+    end
+end
+
+function title_scene:draw()
+    love.graphics.setColor(util.hex_to_col("#ffffff"))
     love.graphics.setFont(fonts.big)
-    util.draw_centered_text(0, 80, 800, 100, "Eulerian Demons")
-    for _, b in pairs(title_scene.buttons) do
-        b:draw()
+    util.draw_centered_text(0, 80, 800, 100, "SOKOBEETLES")
+    for _, button in pairs(self.buttons) do
+        button:draw()
     end
 end
 
